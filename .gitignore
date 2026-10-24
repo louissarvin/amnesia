@@ -1,0 +1,41 @@
+# Build output and dependencies
+target/
+node_modules/
+dist/
+dist-ssr/
+web/.tanstack/
+web/.output/
+web/.nitro/
+*.gz
+vendor/
+
+# Local runtime state, wallets and secrets
+/var
+.env*
+!.env.example
+infra/env/*.env
+infra/**/secrets/
+
+# Local tooling, not part of the project
+.cargo/
+.claude/
+memory/
+_spike/
+.playwright-mcp/
+web/.claude/
+web/.vscode/
+web/.mcp.json
+web/.cta.json
+web/CLAUDE.md
+web/FRONTEND_STRUCTURE_GUIDE.md
+infra/phala-probe/
+.DS_Store
+
+# Research, strategy and submission drafts (kept private)
+/[0-9][0-9]_*.md
+/[0-9][0-9][a-z]_*.md
+RESEARCH_INDEX.md
+HANDOVER.md
+submission/
+hero0.png
+*.jpg
