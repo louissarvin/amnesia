@@ -1,0 +1,43 @@
+[package]
+name = "amnesia-desk"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+# Zcash crates and their features mirror zcash-devtool 0b3436b exactly, so the build reuses
+# its compiled graph and sends with the same code paths it was tested with on Testnet.
+[features]
+# Op trace with values and txids. Local debugging only, never in a hosted build.
+dev-trace = []
+
+[dependencies]
+amnesia-core = { path = "../amnesia-core" }
+anyhow = "1"
+axum = "0.8.9"
+futures-util = "0.3"
+hex = "0.4"
+libc = "0.2"
+prost = "0.14"
+rand = { version = "0.10", default-features = false, features = ["sys_rng"] }
+rusqlite = { version = "0.37", features = ["time"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+tokio = { version = "1.21.0", features = ["fs", "io-std", "macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
+uuid = "1"
+tonic = { version = "0.14", features = ["gzip", "tls-webpki-roots"] }
+zeroize = "1"
+
+orchard = { version = "0.16", default-features = false }
+sapling = { package = "sapling-crypto", version = "0.9" }
+transparent = { package = "zcash_transparent", version = "=0.11.0-pre.2", features = ["test-dependencies", "transparent-inputs"] }
+zcash_address = "=0.14.0-pre.2"
+zcash_client_backend = { version = "=0.25.0-pre.2", features = ["lightwalletd-tonic-tls-webpki-roots", "orchard", "pczt", "tor", "unstable"] }
+zcash_client_sqlite = { version = "=0.23.0-pre.2", features = ["transparent-inputs", "unstable", "orchard", "serde", "test-dependencies"] }
+zcash_keys = { version = "=0.17.0-pre.2", features = ["orchard", "sapling", "unstable", "unstable-frost"] }
+zcash_primitives = "=0.31.0-pre.2"
+zcash_proofs = { version = "=0.31.0-pre.2", features = ["bundled-prover"] }
+zcash_protocol = { version = "=0.11.0-pre.1", features = ["local-consensus"] }
+zip32 = "0.3"
