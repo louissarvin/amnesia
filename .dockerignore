@@ -1,0 +1,10 @@
+# Allowlist: images see only the workspace sources and the torrc. Keeps research notes,
+# local wallets (var/), dev target dirs (.cargo/, _spike/) and env files out of every context.
+*
+!Cargo.toml
+!Cargo.lock
+!crates/
+!vendor/
+!infra/cargo-vendor.toml
+!infra/vps/torrc
+crates/**/target
