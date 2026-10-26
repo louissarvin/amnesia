@@ -81,3 +81,6 @@ On Oct 26 the full workspace test suite, built in release mode, passes 39 tests 
 - Reads and broadcasts use one server, testnet.zec.rocks (`main.rs:58`), on separate circuits sharing a guard. Each epoch open makes a burst of tree-state and subtree-root requests (`desk.rs:141-146`).
 - Expired transactions free their notes, and the planner may re-pair them (`desk.rs:417`). ZIP 315 recommends rebuilding with the same inputs.
 
+## 5. Reporting a vulnerability
+
+Open a private GitHub security advisory on this repository (Security tab, "Report a vulnerability"), not a public issue. Include the commit, host type and steps to reproduce.
