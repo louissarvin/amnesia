@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.amnesia.desk</string>
+  <key>ProgramArguments</key><array><string>/bin/sh</string><string>/Users/macbookair/amnesia-host/var/run-desk.sh</string></array>
+  <key>WorkingDirectory</key><string>/Users/macbookair/amnesia-host</string>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <!-- SIGTERM waits for the current tick and its broadcasts. -->
+  <key>ExitTimeOut</key><integer>900</integer>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>StandardOutPath</key><string>/dev/null</string>
+  <key>StandardErrorPath</key><string>/Users/macbookair/amnesia-host/var/launchd-desk.err</string>
+</dict></plist>
