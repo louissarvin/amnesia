@@ -38,3 +38,22 @@ Not protected:
 
 **Current host.** A Mac under launchd (`infra/mac/`). Epochs live on a `ram://` disk at `/Volumes/AmnesiaRAM` (`infra/mac/ramdisk.sh`). Tor 0.4.9.14, built from signed source with the GPL option, reports `pow: yes`; the onion enables PoW and intro DoS defense (`infra/mac/torrc.mac:12-13`). Donor intake (127.0.0.1:8081) is reachable only through the onion. The read API (:8082) and lab (:8090) bind loopback and are published only under `/v1` and `/demo` at `https://amnesia.taila8827e.ts.net` through Tailscale Funnel; `/donate` and `/` return 404 there. Funnel sets `X-Forwarded-For` to the visitor's real IP and drops any client-supplied value (measured Oct 26), so the lab keys its rate limits on it; the lab holds those IPs in memory for cooldowns only and never logs them. Tailscale terminates TLS for this public surface, so Tailscale can see judge traffic to the lab and read API, never donor traffic.
 
+## 3. What has been verified
+
+| Date | Host | Result |
+|-|-|-|
+| 2026-10-24 | Mac, dev profile, files only | Epoch 96a8dd42 (two donations) shredded: 0 byte hits in the seized image |
+| 2026-10-24 | Mac, files only | After epoch 9b733e61 shredded, the seizure linked only the live-window donation; the baseline wallet named all four donors |
+| 2026-10-24 | Mac | PoW: valid proof 200, replay 410, wrong nonce 400 |
+| 2026-10-25 | Mac, files only | Linked 0 of 10 withdrawals. Amount attack: 3 sweeps, 8 candidates, 0 pinned |
+| 2026-10-25 | Linux container, Docker Desktop | First RAM test: 1 of 3 addresses survived in a freed buffer, which led to the allocator fix |
+| 2026-10-25 | Linux container, Docker Desktop | RAM retest. Control: 5 of 5 live addresses in 167 MB. After shred: 0 of 5 in 184 MB of RAM plus all files, 0 hits on 20-character fragments |
+| 2026-10-26 | Mac | Latest seizure linked 3 of 41 records, all in the live window. Amount attack pinned 0 of 35 candidates. No RAM image |
+| 2026-10-26 | Mac, native tor | Donor page returned 200 over Tor in 9.6 s with CSP and `no-store`, no cookies |
+| 2026-10-26 | Mac | The desk's only outbound TCP connections go to Tor relays; none to testnet.zec.rocks (rechecked with `lsof` for this file) |
+| 2026-10-26 | Mac, Testnet | End-to-end donation: issued, paid, both forwards mined at height 4543245 |
+| 2026-10-26 | Mac | `/v1/info` `binary_sha256` matches the installed desk binary |
+| 2026-10-27 | Mac, Testnet | Judge flow: lab donation `you-6bdb` mined, then named by both the baseline and the amnesia seizure (live epoch), as expected before its shred |
+
+On Oct 26 the full workspace test suite, built in release mode, passes 39 tests (16 core, 20 lab, 3 desk), with release overflow checks on for our crates. On Oct 27 the lab suite (22 tests) passes after the float-wait and intake-retry changes.
+
