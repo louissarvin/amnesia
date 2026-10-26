@@ -1,0 +1,19 @@
+# RAM-proof run only, never the always-on public lab. Layer last, then go back without it:
+#   docker compose -f compose.yaml [-f compose.dev.yaml] -f compose.ramproof.yaml up -d lab
+# /proc/PID/mem of the non-dumpable desk is 0600 root:root and needs CAP_SYS_PTRACE, so root.
+services:
+  lab:
+    user: "0:0"
+    pid: "service:desk"
+    # DAC_OVERRIDE lets root read the desk's 0700 files (mounts stay read-only). Never
+    # DAC_READ_SEARCH: it enables open_by_handle_at, the Shocker escape.
+    cap_add: [SYS_PTRACE, DAC_OVERRIDE]
+    # The desk's tini is PID 1 in the shared namespace.
+    init: false
+    environment:
+      AMNESIA_SEIZE_MEMORY: "1"
+
+  # Arti refuses state owned by another uid, so a root lab needs lab_root as root. The
+  # default lab-chown hands it back to 10001 on the next normal `up`.
+  lab-chown:
+    entrypoint: ["chown", "-R", "0:0", "/var/lib/amnesia/lab"]
