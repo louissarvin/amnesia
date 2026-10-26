@@ -57,3 +57,27 @@ Not protected:
 
 On Oct 26 the full workspace test suite, built in release mode, passes 39 tests (16 core, 20 lab, 3 desk), with release overflow checks on for our crates. On Oct 27 the lab suite (22 tests) passes after the float-wait and intake-retry changes.
 
+## 4. Known residuals and limitations
+
+**Host**
+
+- The Mac is weaker than the Linux design. Ledger, Tor state, logs and lab wallets sit on an APFS SSD. Swap is encrypted but cannot be disabled; nothing is mlocked. The strict host check is Linux only and does not run (`hardening.rs:22-25`).
+- No RAM capture on macOS (`memdump.rs:54-57`): Mac seizures cover files only.
+- The Mac slept on battery for 6 h and 18 h. `caffeinate -s` holds only on AC power.
+- Tor's RAM was never captured on either host, though it relays the issued-address page.
+- The Docker Desktop VM used for the RAM test has swap.
+- The onion runs on a residential IP without the Vanguards addon.
+- The Mac lab runs as the desk's user and reads live epochs (`infra/mac/run-lab.sh:5`): a lab compromise equals a live seizure. Lab seizures copy live keyrings and the treasury seed, so since Oct 26 they live on a second `ram://` disk (`/Volumes/AmnesiaSeize`, `infra/mac/run-lab.sh`) with at most 3 kept; older seizures that had been written to the SSD were overwritten and unlinked, which on APFS is not guaranteed erasure. Bundles carry viewing keys, so they reveal live-window receipts until forgotten (epoch shred or 24 h).
+- Status lines (tip, phases) are off in production since Oct 26 (`infra/mac/run-desk.sh`), but earlier lines remain in the desk log on the SSD.
+
+**Protocol and operation**
+
+- The live window is fully exposed, and one process holds every live epoch. Demo parameters suggest about 12 h from issue to shred, but nothing enforces it: one epoch has been live about 23 h at writing.
+- n-1 and address-buying attacks are priced only by PoW and caps. The Mac host runs 16-bit PoW (`run-desk.sh:7`). The no-JS path replaces PoW with a 60 s wait. The cap is 50 addresses per epoch (`params.rs:29`); lab donations are capped at 6 per hour (`limits.rs:15`).
+- Testnet only. The 10,000 zat fee is hard-coded; under ZIP 2009's lower fee desk transactions would fail the assert or stand out. Expiry is 40; ZIP 203 for NU7 says 120.
+- The shred log is self-reported and unsigned (`ledger.rs:13-21`). There is no attestation; `/v1/info` reports `tee: none` and `git_commit: unknown`. On Oct 26, 4 rows wrongly marked `lost` after a migration mistake were removed by hand. The backup `shred.jsonl.bak-20261026` is kept on the host.
+- Rows written before Oct 26 have no profile and show as `unknown`; most of them ran the dev profile (15 min epochs, 20 block burial). As of Oct 27, 5 demo-profile epochs have shredded, 3 of them with issued addresses (bucket 1-9), out of 55 in the log.
+- The lab is a simulator. Its exchange records are synthetic (`crates/amnesia-lab/src/records.rs`). Lab bots fetch addresses over loopback, not the onion (`run-lab.sh:4`).
+- Reads and broadcasts use one server, testnet.zec.rocks (`main.rs:58`), on separate circuits sharing a guard. Each epoch open makes a burst of tree-state and subtree-root requests (`desk.rs:141-146`).
+- Expired transactions free their notes, and the planner may re-pair them (`desk.rs:417`). ZIP 315 recommends rebuilding with the same inputs.
+
