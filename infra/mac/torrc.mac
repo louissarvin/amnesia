@@ -1,0 +1,21 @@
+# Donor intake onion on the Mac host. Same options as infra/vps/torrc (tor 0.4.9.x manual),
+# target is the native desk on loopback.
+DataDirectory /Users/macbookair/amnesia-host/var/tor/data
+SocksPort 0
+Log notice stdout
+SafeLogging 1
+AvoidDiskWrites 1
+
+HiddenServiceDir /Users/macbookair/amnesia-host/var/tor/data/desk
+HiddenServicePort 80 127.0.0.1:8081
+# Needs a tor built with --enable-gpl: Homebrew's build has no PoW module.
+# Pinned on (default auto follows consensus): guards against guard-discovery attacks.
+VanguardsLiteEnabled 1
+HiddenServicePoWDefensesEnabled 1
+# Defaults (250/s, burst 2500) suit big services; PoW effort only rises once this queue
+# backs up, so size it to what the desk can serve (tor manual, HiddenServicePoWQueueRate).
+HiddenServicePoWQueueRate 20
+HiddenServicePoWQueueBurst 200
+HiddenServiceEnableIntroDoSDefense 1
+HiddenServiceMaxStreams 16
+HiddenServiceMaxStreamsCloseCircuit 1
