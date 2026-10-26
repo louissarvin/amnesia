@@ -1,0 +1,419 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist/wght.css";
+@import "@fontsource-variable/geist-mono/wght.css";
+/* Global, not per-route: route CSS adds <link> tags the SPA shell lacks (React #418). */
+@import "./components/reactbits/HoldButton.css";
+@import "./components/reactbits/StatusMark.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root,
+html.dark {
+  --bg: #07080a;
+  --surface: #07080a;
+  --fg: #ecebe8;
+  --muted: rgb(236 235 232 / 0.64);
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.16);
+  --glass: rgb(7 8 10 / 0.72);
+  --spot: rgb(255 255 255 / 0.14);
+  --gold: #f4b728;
+  --gold-ink: #f4b728;
+  color-scheme: dark;
+}
+
+html.light {
+  --bg: #f3f1ef;
+  --surface: #f3f1ef;
+  --fg: #0b0b0c;
+  --muted: rgb(11 11 12 / 0.64);
+  --line: rgb(11 11 12 / 0.1);
+  --line-strong: rgb(11 11 12 / 0.2);
+  --glass: rgb(243 241 239 / 0.72);
+  --spot: rgb(11 11 12 / 0.22);
+  --gold-ink: #8a5d00;
+  color-scheme: light;
+}
+
+@theme inline {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-glass: var(--glass);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-state: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@layer base {
+  body {
+    @apply m-0 bg-bg font-sans text-fg antialiased;
+    transition: background-color 300ms var(--ease-state), color 300ms var(--ease-state);
+  }
+
+  ::selection {
+    background: var(--gold);
+    color: #07080a;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 3px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 4px;
+  }
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* 1. Page transitions: old page blurs out, new page rises in, the nav never moves */
+.site-nav {
+  view-transition-name: site-nav;
+}
+::view-transition-old(site-nav) {
+  display: none;
+}
+::view-transition-new(site-nav) {
+  animation: none;
+}
+::view-transition-group(site-nav) {
+  animation: none;
+}
+@keyframes vt-out {
+  to { opacity: 0; filter: blur(6px); }
+}
+@keyframes vt-in {
+  from { opacity: 0; transform: translateY(12px); }
+}
+::view-transition-old(root) {
+  animation: vt-out 240ms var(--ease-state) both;
+}
+::view-transition-new(root) {
+  animation: vt-in 420ms var(--ease-out-expo) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* 3. Hairline cells: the top rule draws in, then the content follows */
+.frame {
+  border-inline: 1px solid var(--line);
+}
+.cell {
+  position: relative;
+}
+.cell::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 auto 0;
+  height: 1px;
+  pointer-events: none;
+  background: var(--line);
+  transform-origin: left;
+}
+.cell::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  height: 11px;
+  pointer-events: none;
+  color: var(--line-strong);
+  background:
+    linear-gradient(currentColor, currentColor) left 0 top 5px / 11px 1px no-repeat,
+    linear-gradient(currentColor, currentColor) left 5px top 0 / 1px 11px no-repeat,
+    linear-gradient(currentColor, currentColor) right 0 top 5px / 11px 1px no-repeat,
+    linear-gradient(currentColor, currentColor) right 5px top 0 / 1px 11px no-repeat;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .cell[data-draw="pending"]::after {
+    transform: scaleX(0);
+  }
+  .cell[data-draw="in"]::after {
+    transform: scaleX(1);
+    transition: transform 600ms var(--ease-out-expo);
+  }
+  .cell[data-draw="pending"] > * {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  .cell[data-draw="in"] > * {
+    translate: none;
+    transition:
+      opacity 700ms var(--ease-out-expo) calc(150ms + var(--i, 0) * 80ms),
+      translate 700ms var(--ease-out-expo) calc(150ms + var(--i, 0) * 80ms);
+  }
+}
+
+/* 4. Spotlight border: --x and --y are set on pointermove, no React render */
+.spot,
+.card {
+  position: relative;
+}
+.spot::after,
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(240px circle at var(--x, 50%) var(--y, 50%), var(--spot), transparent 70%);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: opacity 250ms var(--ease-state);
+}
+@media (hover: hover) {
+  .spot:hover::after,
+  .card:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Mono pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--line-strong);
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    background-color 200ms var(--ease-state),
+    color 200ms var(--ease-state),
+    border-color 200ms var(--ease-state),
+    opacity 200ms,
+    transform 200ms var(--ease-out-expo);
+}
+.pill:hover {
+  background: var(--line);
+  transform: translateY(-1px);
+}
+.pill .arrow {
+  display: inline-block;
+  transition: transform 200ms var(--ease-out-expo);
+}
+.pill:hover .arrow {
+  transform: translateX(2px);
+}
+.pill-solid {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+.pill-solid:hover {
+  background: var(--fg);
+  opacity: 0.85;
+}
+.pill:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--line-strong);
+  padding: 0.125rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Flat hairline card */
+.card {
+  border-radius: 1.75rem;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.display {
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+/* 2. Scramble cursor: a gold block over one character, no DOM changes */
+::highlight(scramble-cursor) {
+  background-color: var(--gold);
+  color: #07080a;
+}
+
+/* One-time address dissolve */
+@keyframes forget {
+  to {
+    opacity: 0;
+    filter: blur(6px);
+    letter-spacing: 0.04em;
+  }
+}
+.forget {
+  animation: forget 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Isometric diagrams: base styles are the drawn end state, reduced motion keeps it */
+.diagram .draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.diagram[data-live="true"] .draw {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.6s var(--ease-out-expo) var(--d, 0s);
+}
+.diagram[data-live="false"] * {
+  animation-play-state: paused;
+}
+.diagram * {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .diagram .draw {
+    stroke-dashoffset: 0;
+    transition: none;
+  }
+  .diagram *,
+  .wave,
+  .live-dot,
+  .beam,
+  .drop > span {
+    animation: none !important;
+  }
+  .forget {
+    animation-duration: 1ms;
+  }
+}
+@keyframes d-drop {
+  0% { opacity: 0; transform: translateY(-28px); }
+  25%, 70% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(8px); }
+}
+@keyframes d-lid {
+  0%, 15% { transform: translateY(-22px); opacity: 0.2; }
+  45%, 85% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-22px); opacity: 0.2; }
+}
+@keyframes d-bob {
+  50% { transform: translateY(-4px); }
+}
+@keyframes d-layer {
+  0%, 10% { opacity: 0; transform: translateY(-10px); }
+  30%, 90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; }
+}
+@keyframes d-strip {
+  0%, 20% { transform: translate(0, 0); opacity: 1; }
+  80%, 100% { transform: translate(var(--x, 10px), var(--y, 18px)) rotate(var(--r, 6deg)); opacity: 0; }
+}
+@keyframes d-flow {
+  to { stroke-dashoffset: -14; }
+}
+@keyframes demo-pulse {
+  50% { opacity: 0.35; }
+}
+.d-drop { animation: d-drop 3.2s var(--ease-out-expo) infinite; animation-delay: var(--d, 0s); }
+.d-lid { animation: d-lid 4.8s var(--ease-state) infinite; }
+.d-bob { animation: d-bob 2.4s var(--ease-state) infinite; animation-delay: var(--d, 0s); }
+.d-layer { animation: d-layer 4.8s var(--ease-state) infinite; animation-delay: var(--d, 0s); }
+.d-strip { animation: d-strip 4.2s var(--ease-out-expo) infinite; animation-delay: var(--d, 0s); }
+.d-flow { stroke-dasharray: 3 4; animation: d-flow 1.2s linear infinite; }
+.live-dot { animation: demo-pulse 2.4s var(--ease-state) infinite; }
+
+/* Scanning beam while a seizure runs: one gold hairline sweeping the panel */
+@keyframes beam {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+.beam {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  animation: beam 2.2s var(--ease-state) infinite alternate;
+}
+.beam::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: var(--gold);
+}
+
+/* Letter drop reveal */
+@keyframes drop {
+  from { opacity: 0; transform: translateY(-0.8em); filter: blur(4px); }
+}
+.drop > span {
+  display: inline-block;
+  white-space: pre;
+  animation: drop 700ms var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--i) * 40ms);
+}
+
+/* FAQ */
+@keyframes faq-in {
+  from { opacity: 0; transform: translateY(-6px); }
+}
+.faq[open] .faq-body {
+  animation: faq-in 320ms var(--ease-out-expo);
+}
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq .faq-plus {
+  transition: transform 250ms var(--ease-state);
+}
+.faq[open] .faq-plus {
+  transform: rotate(45deg);
+}
+
+/* Footer wave: a pattern two periods wide slides one period */
+@keyframes wave-slide {
+  to { transform: translateX(-50%); }
+}
+.wave {
+  animation: wave-slide var(--t, 18s) linear infinite;
+  will-change: transform;
+}
