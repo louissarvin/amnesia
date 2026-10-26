@@ -1,0 +1,189 @@
+# Hosted desk (VPS). Run from infra/: docker compose up -d desk tor lab
+name: amnesia
+
+x-hard: &hard
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  ulimits:
+    core: 0
+  # Desk has no SIGTERM handler; tini as PID 1 lets the default action end it promptly.
+  init: true
+  # Bounded rotating files; lines are already allowlisted JSON. `none` loses crash diagnostics.
+  logging:
+    driver: local
+    options: { max-size: "5m", max-file: "2" }
+
+services:
+  desk:
+    <<: *hard
+    build:
+      context: ..
+      dockerfile: infra/images/rust.Dockerfile
+      target: desk
+    image: amnesia-desk:local
+    user: "10001:10001"
+    env_file:
+      # Optional so `init-all` runs before it exists; the desk exits on a missing TREASURY_UA.
+      - path: ./env/desk.env
+        required: false
+    # Set here, not in the env file, so a stray env line cannot weaken them.
+    environment:
+      AMNESIA_PROFILE: demo
+      AMNESIA_STRICT: "1"
+      AMNESIA_TOR: "1"
+      AMNESIA_ROOT: /var/lib/amnesia/desk
+      AMNESIA_EPOCHS_DIR: /run/amnesia/epochs
+      # Internal network only: the egress bridge and the host must not reach intake.
+      AMNESIA_DONOR_ADDR: 10.77.0.10:8081
+      AMNESIA_READ_ADDR: 10.77.0.10:8082
+      # glibc fills freed heap chunks with this byte, part of the in-memory erasure.
+      MALLOC_PERTURB_: "165"
+      # Perturb skips glibc's tcache and fastbins; turn both off so every C free is overwritten.
+      GLIBC_TUNABLES: "glibc.malloc.tcache_count=0:glibc.malloc.mxfast=0"
+    volumes:
+      - desk_root:/var/lib/amnesia/desk
+      - desk_epochs:/run/amnesia/epochs
+    networks:
+      internal:
+        ipv4_address: 10.77.0.10
+      egress: {}
+    mem_limit: 2560m
+    pids_limit: 256
+    stop_grace_period: 900s
+    # No curl in the image; bash's /dev/tcp is enough for one GET.
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "exec 3<>/dev/tcp/10.77.0.10/8082 && printf 'GET /v1/health HTTP/1.1\\r\\nHost: desk\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"fresh\":true' <&3"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+
+  tor:
+    <<: *hard
+    build:
+      context: ..
+      dockerfile: infra/images/tor.Dockerfile
+    image: amnesia-tor:local
+    user: "10004:10004"
+    # Tor relays the issued donor page; overwrite its freed heap like the desk's.
+    environment:
+      MALLOC_PERTURB_: "165"
+      GLIBC_TUNABLES: "glibc.malloc.tcache_count=0:glibc.malloc.mxfast=0"
+    volumes:
+      - tor_hs:/var/lib/tor
+    networks:
+      internal: {}
+      egress: {}
+    mem_limit: 512m
+    pids_limit: 64
+    restart: unless-stopped
+
+  lab:
+    <<: *hard
+    build:
+      context: ..
+      dockerfile: infra/images/rust.Dockerfile
+      target: lab
+    image: amnesia-lab:local
+    # Public demo API: the desk's uid reads its 0700 files through read-only mounts, so no
+    # capabilities. RAM capture needs root + SYS_PTRACE and lives in compose.ramproof.yaml.
+    user: "10001:10001"
+    env_file:
+      - path: ./env/lab.env
+        required: false
+    environment:
+      AMNESIA_LAB_ADDR: 0.0.0.0:8090
+      AMNESIA_LAB_ROOT: /var/lib/amnesia/lab
+      AMNESIA_DESK_INTAKE: desk:8081
+      AMNESIA_DESK_READ: desk:8082
+      AMNESIA_SEIZE_SOURCES: /seize/epochs,/seize/desk-root
+      AMNESIA_SEIZE_MEMORY: "0"
+      AMNESIA_TOR: "1"
+      AMNESIA_FAUCET: "1"
+    tmpfs: ["/tmp:size=16m,mode=1777,noexec,nosuid,nodev"]
+    volumes:
+      - lab_root:/var/lib/amnesia/lab
+      # Demo seizure only: the lab reads the live desk state, read-only.
+      - type: volume
+        source: desk_epochs
+        target: /seize/epochs
+        read_only: true
+      - type: volume
+        source: desk_root
+        target: /seize/desk-root
+        read_only: true
+    networks:
+      internal: {}
+      egress: {}
+    depends_on:
+      lab-chown:
+        condition: service_completed_successfully
+      desk:
+        condition: service_healthy
+    mem_limit: 2g
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8090 && printf 'GET /demo/status HTTP/1.1\\r\\nHost: lab\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"fee\"' <&3"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+
+  # One-shot before each lab start: hands lab_root to 10001, since older root labs and
+  # ramproof runs leave root-owned files. No network, only lab_root mounted.
+  lab-chown:
+    <<: *hard
+    image: amnesia-lab:local
+    pull_policy: never
+    user: "0:0"
+    # DAC_OVERRIDE to traverse 10001-owned 0700 dirs; never DAC_READ_SEARCH.
+    cap_add: [CHOWN, DAC_OVERRIDE]
+    network_mode: none
+    entrypoint: ["chown", "-R", "10001:10001", "/var/lib/amnesia/lab"]
+    volumes:
+      - lab_root:/var/lib/amnesia/lab
+    mem_limit: 64m
+    pids_limit: 16
+    restart: "no"
+
+  # Added later. web reads desk:8082 and lab:8090 on `internal`; caddy alone publishes 80/443.
+  # web:
+  #   <<: *hard
+  #   image: amnesia-web:local
+  #   user: "10003:10003"
+  #   environment: { NODE_ENV: production, DO_NOT_TRACK: "1" }
+  #   tmpfs: ["/tmp:size=16m"]
+  #   logging: { driver: none }
+  #   networks: [internal]
+  # caddy:
+  #   <<: *hard
+  #   image: caddy:2
+  #   cap_add: [NET_BIND_SERVICE]
+  #   ports: ["80:80", "443:443"]
+  #   volumes: ["./vps/Caddyfile:/etc/caddy/Caddyfile:ro", "caddy_data:/data"]
+  #   networks: [internal, egress]
+
+networks:
+  # No route out; desk, tor and lab talk here. Fixed subnet because torrc targets 10.77.0.10.
+  internal:
+    internal: true
+    ipam:
+      config:
+        - subnet: 10.77.0.0/24
+  egress: {}
+
+volumes:
+  # Per-epoch keys. RAM only; gone when the last container using it stops. Options go
+  # straight to mount(2), so noswap needs a 6.4+ kernel (Debian 13 and Docker Desktop pass).
+  desk_epochs:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: "size=1g,mode=0700,uid=10001,gid=10001,nosuid,nodev,noexec,noswap"
+  desk_root: {}
+  lab_root: {}
+  tor_hs: {}
