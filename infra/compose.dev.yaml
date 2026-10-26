@@ -1,0 +1,14 @@
+# Mac override (Docker Desktop): docker compose -f compose.yaml -f compose.dev.yaml up desk tor
+# Docker Desktop's VM has swap on (/var/lib/swap), so the strict host check cannot pass.
+services:
+  desk:
+    environment:
+      AMNESIA_PROFILE: dev
+      AMNESIA_STRICT: "0"
+    # 4 GB VM shared with other projects.
+    mem_limit: 1536m
+  lab:
+    environment:
+      # Faucet claims are per IP per day; the VPS owns that claim.
+      AMNESIA_FAUCET: "0"
+    mem_limit: 1g
