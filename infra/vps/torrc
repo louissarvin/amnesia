@@ -1,0 +1,22 @@
+# Donor intake onion. Option names checked against tor.1.txt (tor main, 0.4.9.x).
+DataDirectory /var/lib/tor
+SocksPort 0
+Log notice stdout
+SafeLogging 1
+AvoidDiskWrites 1
+
+# On the tor_hs volume so the onion address survives restarts.
+HiddenServiceDir /var/lib/tor/desk
+# Fixed IP on the internal network: tor resolves a hostname target once at startup only,
+# so a recreated desk with a new address would silently break the onion.
+HiddenServicePort 80 10.77.0.10:8081
+# Pinned on (default auto follows consensus): guards against guard-discovery attacks.
+VanguardsLiteEnabled 1
+HiddenServicePoWDefensesEnabled 1
+# Defaults (250/s, burst 2500) suit big services; PoW effort only rises once this queue
+# backs up, so size it to what the desk can serve (tor manual, HiddenServicePoWQueueRate).
+HiddenServicePoWQueueRate 20
+HiddenServicePoWQueueBurst 200
+HiddenServiceEnableIntroDoSDefense 1
+HiddenServiceMaxStreams 16
+HiddenServiceMaxStreamsCloseCircuit 1
