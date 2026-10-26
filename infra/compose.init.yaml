@@ -1,0 +1,8 @@
+# First run only, before desk.env has a TREASURY_UA:
+#   docker compose -f compose.yaml -f compose.init.yaml run --rm lab amnesia-lab init-all
+# Needs no running desk; lab-chown still runs first so the wallets land as uid 10001.
+services:
+  lab:
+    depends_on: !override
+      lab-chown:
+        condition: service_completed_successfully
