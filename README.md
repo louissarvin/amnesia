@@ -54,3 +54,14 @@ Zcash already hides payments on chain. It does not help once the receiver's own 
 - **Checkable by the donor.** The shred receipt appears in the public log only when the keys are gone. The donor's browser checks it locally, so the desk never learns whose receipt is being checked.
 - **Honest about the gap.** While an epoch is live its keys exist, and a seizure in that window can read them. The demo shows that too.
 
+## Try it in two minutes
+
+1. **Donate** at [/donate](https://amnesia.taila8827e.ts.net/donate). No wallet needed: the lab's simulated exchange pays a fresh Amnesia address and a normal wallet the same amount, from real testnet funds. You get a client id like `you-da1d`, the block it was mined in, the time its keys will be destroyed, and a shred receipt.
+2. **Seize both** at [/seize](https://amnesia.taila8827e.ts.net/seize). The lab copies the desk's files and RAM-disk epochs, scans them for keys and receipts, and matches them against the exchange's withdrawal records. Your id is highlighted. The normal wallet names you. Amnesia names you too, because your epoch is still live.
+3. **Come back after the shred.** When your receipt appears in the [public log](https://amnesia.taila8827e.ts.net/audit), the keys are gone. Seize again and Amnesia no longer names you. The home page tracks all four steps for you.
+4. **Run your own** at [/operate](https://amnesia.taila8827e.ts.net/operate), and **check the claims** at [/verify](https://amnesia.taila8827e.ts.net/verify) (binary hash, build recipe, live parameters, raw endpoints).
+
+Real donors skip the lab: open the onion address in Tor Browser, solve the proof of work (or wait a minute with JavaScript off), and pay the one-time address from any shielded testnet wallet.
+
+---
+
