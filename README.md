@@ -26,3 +26,19 @@ Amnesia is a Zcash donation desk built to forget its donors. Every donor gets a 
 
 ---
 
+## The problem
+
+Anyone who takes donations keeps a list of donors, whether they mean to or not. A normal wallet stores every incoming payment, the address it arrived on, and the time. That database is the donor list. It outlives the campaign, it outlives the people who promised to protect it, and it is the first thing taken when a server is seized, subpoenaed, breached or sold.
+
+This is not hypothetical:
+
+| What happened | Source | Date |
+|---|---|---|
+| "GiveSendGo suffers hack related to 'Freedom Convoy', data leaked": donor names, emails, zip codes and IP addresses | [Global News](https://globalnews.ca/news/8618116/givesendgo-suffers-hack-related-to-freedom-convoy-data-leaked) | Feb 14, 2022 |
+| US Supreme Court strikes down California's demand for charities' donor lists (Schedule B), 6 to 3, citing the chilling effect even of confidential disclosure | [Congressional Research Service](https://www.everycrsreport.com/reports/LSB10621.html) | Jul 1, 2021 |
+| *NAACP v. Alabama*: the Court blocks a state from forcing the NAACP to hand over its membership list, because exposure invites harassment and reprisal | [Congressional Research Service](https://www.everycrsreport.com/reports/LSB10621.html) | 1958 |
+
+Courts can protect a list. Breaches and seizures ignore that protection. The only list that cannot leak is one that no longer exists.
+
+Zcash already hides payments on chain. It does not help once the receiver's own wallet is taken: the wallet can decrypt everything it ever received. The protocol request for this, forward unspendability with keys you can provably throw away, has been open for years: [zcash/zcash#2044](https://github.com/zcash/zcash/issues/2044). Amnesia builds it as a product.
+
