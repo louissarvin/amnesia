@@ -42,3 +42,15 @@ Courts can protect a list. Breaches and seizures ignore that protection. The onl
 
 Zcash already hides payments on chain. It does not help once the receiver's own wallet is taken: the wallet can decrypt everything it ever received. The protocol request for this, forward unspendability with keys you can provably throw away, has been open for years: [zcash/zcash#2044](https://github.com/zcash/zcash/issues/2044). Amnesia builds it as a product.
 
+## The solution
+
+1. A donor opens the desk's onion address in Tor Browser, solves a short proof of work, and gets a **one-time Orchard address**, a deadline and a **shred receipt**.
+2. The donor pays from any shielded wallet. The desk forwards the payment into its epoch's pool at a time it fixed when the address was issued, then sweeps the pool to the organisation's treasury in round denominations.
+3. Once the epoch's last transaction is 600 blocks deep, the desk **overwrites, fsyncs and deletes every key of that epoch**, zeroizes them in memory, and writes one line to a public shred log: the epoch id (the donor's receipt), rounded hours and a bucketed count.
+
+**In plain terms:**
+- **Nothing to sign up for.** No account, no wallet connection, no cookie. One onion link and a payment.
+- **Nothing to leak later.** After the shred, a full copy of the server cannot say who paid. A normal wallet can, forever.
+- **Checkable by the donor.** The shred receipt appears in the public log only when the keys are gone. The donor's browser checks it locally, so the desk never learns whose receipt is being checked.
+- **Honest about the gap.** While an epoch is live its keys exist, and a seizure in that window can read them. The demo shows that too.
+
