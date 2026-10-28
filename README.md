@@ -214,3 +214,38 @@ Bundles of the Amnesia desk hold live viewing keys, so the lab deletes each one 
 
 ---
 
+## Run locally
+
+Prerequisites: Rust (the toolchain is pinned in `rust-toolchain.toml`), [Bun](https://bun.sh), and for the full stack either Docker or a Mac with Tor.
+
+**Clone**
+
+```bash
+git clone https://github.com/louissarvin/amnesia.git
+cd amnesia
+```
+
+**Desk and lab**
+
+```bash
+cargo build --release --locked -p amnesia-desk -p amnesia-lab
+cargo test --release              # 43 tests across core, desk and lab
+```
+
+**Web**
+
+```bash
+cd web
+bun install
+bun dev                           # http://localhost:3200
+bun run build
+```
+
+**Full stack**
+
+- Linux, hardened: [`infra/README.md`](infra/README.md) (Docker Compose: desk, tor, lab).
+- Mac, as in production today: [`infra/mac/README.md`](infra/mac/README.md) (launchd agents, RAM disks, one-command web deploy).
+- An organisation's own desk, without the lab: [`/operate`](https://amnesia.taila8827e.ts.net/operate).
+
+---
+
