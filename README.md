@@ -200,3 +200,17 @@ Bundles of the Amnesia desk hold live viewing keys, so the lab deletes each one 
 
 ---
 
+## Repo layout
+
+| Path | What |
+|---|---|
+| [`crates/amnesia-core`](crates/amnesia-core/README.md) | Shared params and profiles, fees, denominations, buckets. 16 tests |
+| [`crates/amnesia-desk`](crates/amnesia-desk/README.md) | The desk: intake, epochs, wallet, Tor chain client, shred, ledger, read API. 4 tests |
+| [`crates/amnesia-lab`](crates/amnesia-lab/README.md) | The lab: simulated exchange and bots, seizure, scanner, amount attack, judge API, static UI. 23 tests |
+| [`web/`](web/README.md) | Judge UI: home, donate, seize, audit, verify, operate |
+| [`infra/`](infra/README.md) | Linux container stack (hardened design, RAM-capture test) |
+| [`infra/mac/`](infra/mac/README.md) | The current host: launchd agents, RAM disks, Tor config, watchdog, web deploy script |
+| [`SECURITY.md`](SECURITY.md) | Adversaries, mechanisms with file and line references, evidence, residuals |
+
+---
+
