@@ -344,3 +344,6 @@ ZECATHON 2026, Shielded Payments track.
 
 MIT or Apache 2.0, at your option: [`LICENSE-MIT`](LICENSE-MIT), [`LICENSE-APACHE`](LICENSE-APACHE).
 
+## AI use
+
+Built with Claude Code as a pair programmer for design review, code, tests, documentation and live verification. Every claim in this README was checked against the running system, the code or a cited source before it was written.
