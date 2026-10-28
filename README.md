@@ -287,3 +287,21 @@ The donor intake is reachable only through the onion. The public Funnel URL serv
 
 ---
 
+## What is real vs simulated
+
+| Area | Status |
+|---|---|
+| Desk, epochs, forwards, sweeps, shreds on Zcash Testnet | **Live** since 24 Oct 2026. 66 epochs shredded, 0 lost |
+| Onion intake with PoW and a no-JS path | **Live** |
+| Tor for every chain read and broadcast | **Live**. The desk's only outbound TCP goes to Tor relays (checked with `lsof`) |
+| Seizure | **Real** copy of the desk's files and RAM-disk epochs, and of the baseline wallet. Files only on the Mac; RAM capture was tested on Linux, where after a shred 0 of 5 addresses were found in 184 MB of RAM plus all files |
+| Shred receipt and browser-side log check | **Live** |
+| Shred log and binary hash | **Real but self-reported.** No hardware attestation |
+| Exchange and its withdrawal records | **Simulated** by the lab, with real testnet funds and synthetic client ids |
+| Donors | Lab bots and judges, plus anyone who pays through the onion |
+| Normal wallet ("baseline") | A **real** testnet wallet that never deletes anything, for comparison |
+| Linux hardened stack | **Tested in containers**, not run as the public desk |
+| Mainnet | **No.** Fee and expiry are tied to current testnet rules |
+
+---
+
