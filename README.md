@@ -20,7 +20,7 @@ Amnesia is a Zcash donation desk built to forget its donors. Every donor gets a 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![License](https://img.shields.io/badge/License-MIT_or_Apache_2.0-green)
 
-**[Live demo](https://amnesia.taila8827e.ts.net)** · **[Security model](SECURITY.md)** · **[Run your own desk](https://amnesia.taila8827e.ts.net/operate)**
+**[Live demo](https://amnesia.taila8827e.ts.net)** · **[Demo video](https://youtu.be/jreQXoB9hlI)** · **[Security model](SECURITY.md)** · **[Run your own desk](https://amnesia.taila8827e.ts.net/operate)**
 
 </div>
 
@@ -329,7 +329,7 @@ ZECATHON 2026, Shielded Payments track.
 | Demo URL | [amnesia.taila8827e.ts.net](https://amnesia.taila8827e.ts.net) |
 | Donor intake | `3ifmcl72upgshv4nbcum4qzwk32whg6vrditxqgzhmfuwttw67slxoqd.onion` |
 | Repository | [github.com/louissarvin/amnesia](https://github.com/louissarvin/amnesia) |
-| Demo video | Two minutes, link added at submission |
+| Demo video | [youtu.be/jreQXoB9hlI](https://youtu.be/jreQXoB9hlI) (2:00) |
 
 ---
 
