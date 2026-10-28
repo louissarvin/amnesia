@@ -318,3 +318,18 @@ The donor intake is reachable only through the onion. The public Funnel URL serv
 
 ---
 
+## Submission
+
+ZECATHON 2026, Shielded Payments track.
+
+| Field | Value |
+|---|---|
+| Project | Amnesia |
+| Track | Shielded Payments |
+| Demo URL | [amnesia.taila8827e.ts.net](https://amnesia.taila8827e.ts.net) |
+| Donor intake | `3ifmcl72upgshv4nbcum4qzwk32whg6vrditxqgzhmfuwttw67slxoqd.onion` |
+| Repository | [github.com/louissarvin/amnesia](https://github.com/louissarvin/amnesia) |
+| Demo video | Two minutes, link added at submission |
+
+---
+
