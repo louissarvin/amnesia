@@ -340,3 +340,7 @@ ZECATHON 2026, Shielded Payments track.
 - **Payments after the deadline are lost.** The keys that could receive them are destroyed. That is the price of a desk that cannot betray you.
 - **The demo host is a single Mac.** If it sleeps or loses power, the demo pauses, and live epochs on the RAM disk would be recorded as lost after a reboot.
 
+## License
+
+MIT or Apache 2.0, at your option: [`LICENSE-MIT`](LICENSE-MIT), [`LICENSE-APACHE`](LICENSE-APACHE).
+
