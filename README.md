@@ -127,3 +127,17 @@ The demo tells each judge the same thing about their own donation on `/seize`, `
 
 ---
 
+## Live deployment
+
+| Surface | Where |
+|---|---|
+| Judge UI and demo API | [amnesia.taila8827e.ts.net](https://amnesia.taila8827e.ts.net) (Tailscale Funnel to the lab and the read API) |
+| Donor intake (Tor Browser) | `http://3ifmcl72upgshv4nbcum4qzwk32whg6vrditxqgzhmfuwttw67slxoqd.onion` |
+| Read API | [`/v1/health`](https://amnesia.taila8827e.ts.net/v1/health) · [`/v1/summary`](https://amnesia.taila8827e.ts.net/v1/summary) · [`/v1/shred-log`](https://amnesia.taila8827e.ts.net/v1/shred-log?limit=20) · [`/v1/info`](https://amnesia.taila8827e.ts.net/v1/info) · [`/v1/audit/weeks`](https://amnesia.taila8827e.ts.net/v1/audit/weeks) · [`/v1/treasury`](https://amnesia.taila8827e.ts.net/v1/treasury) |
+| Lab API | [`/demo/status`](https://amnesia.taila8827e.ts.net/demo/status) · [`/demo/history`](https://amnesia.taila8827e.ts.net/demo/history) · [`/demo/seizures`](https://amnesia.taila8827e.ts.net/demo/seizures) |
+| Running binary | `binary_sha256` and the build recipe in [`/v1/info`](https://amnesia.taila8827e.ts.net/v1/info); compare with your own build |
+| Profile | `demo`: 2 h epochs, 2 h grace, 50 addresses per epoch, 600 block burial |
+| Host | A Mac under launchd, running since 24 Oct 2026 ([`infra/mac/`](infra/mac/README.md)) |
+
+---
+
