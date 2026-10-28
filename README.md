@@ -65,3 +65,65 @@ Real donors skip the lab: open the onion address in Tor Browser, solve the proof
 
 ---
 
+## The full lifecycle, step by step, with a real example
+
+Every number below is from one real run on Zcash Testnet on 27 Oct 2026, client `you-da1d`, made through the public demo. Not a simulation, not a mock chain.
+
+```mermaid
+sequenceDiagram
+    actor Donor as Donor or judge
+    participant Intake as Onion intake
+    participant Desk as Desk (epochs on a RAM disk)
+    participant Chain as Zcash Testnet (via Tor)
+    participant Lab as Lab (seizure)
+    participant Log as Public shred log
+
+    Donor->>Intake: GET /donate, solve PoW
+    Intake->>Desk: issue from the open epoch
+    Desk-->>Donor: one-time address, deadline, shred receipt
+
+    Donor->>Chain: shielded payment to the address
+    Chain-->>Desk: note received (read over Tor)
+
+    rect rgba(244, 183, 40, 0.08)
+    Note over Desk,Chain: at times fixed at issuance
+    Desk->>Chain: forward into the epoch pool (2 actions, no OVK)
+    Desk->>Chain: sweep to treasury in 1, 2, 5 denominations
+    end
+
+    Lab->>Desk: seize while the epoch is live
+    Lab-->>Donor: you are named (keys still exist)
+
+    Note over Desk: last tx 600 blocks deep
+    Desk->>Desk: overwrite, fsync, unlink, zeroize
+    Desk->>Log: append the epoch id (your receipt)
+
+    Lab->>Desk: seize again
+    Lab-->>Donor: nothing names you
+    Donor->>Log: browser finds the receipt locally
+```
+
+**1. Issue.** The donation asks the desk's intake for an address, the same way a real donor does. The desk picks the open epoch, takes the next of its one-time Orchard accounts, and fixes in advance when the funds will move.
+> Real: issued 27 Oct 2026, 11:06 UTC. Deadline 14:00 UTC. Shred receipt `50464c8eb364510fb7ad35ccec35c624`, the id of epoch `50464c8e…`. Amount 0.0092 TAZ (920,000 zats).
+
+**2. Pay.** The lab's simulated exchange pays the Amnesia address and, for comparison, a normal wallet the same amount at the same moment.
+> Real: desk tx [`cb8692c8…96d8bc`](https://blockexplorer.one/zcash/testnet/tx/cb8692c8fceb955763ec515073ea8bdffcaf0f20f9b8c2254b646efee096d8bc), baseline tx [`3adce537…7c6a91`](https://blockexplorer.one/zcash/testnet/tx/3adce537745df6a4483ad9c6c074e851549060f567ceffbfedfb18ab6c7c6a91). Both mined at block **4,547,228**, 2:42 after broadcast. The explorer shows 0 ZEC for both: the amounts are shielded.
+
+**3. Forward and sweep.** At its pre-drawn slot the desk moves the payment into the epoch pool in a transaction of exactly 2 actions with the standard 10,000 zat fee and no outgoing viewing key. After the deadline plus a random wait, the pool pays the treasury in canonical 1, 2 and 5 notes with a random carry into the next epoch. Every read and broadcast goes over its own Tor circuit, with a random 20 to 120 s delay before each broadcast.
+
+**4. Seize while live.** The lab copies the desk's files and RAM-disk epochs, scans them for keys and receipts, and matches them against the exchange's withdrawal records. It does the same to the normal wallet.
+> Real, 27 Oct 2026, 15:45 UTC: the **normal wallet named 25 of 75** withdrawals, `you-da1d` among them, from 1 key in a 4.5 MB image. **Amnesia named 12 of 80**, `you-da1d` among them, because its epoch was still live: 5 live epochs and 256 keys in a 115.6 MB image.
+
+**5. Amount attack on what was already shredded.** With the treasury seed an attacker sees every sweep and tries to match withdrawals to it by amount.
+> Real, same seizure: 16 sweeps, 65 candidate withdrawals, **0 pinned**, 65 ambiguous. One sweep alone was consistent with **13,181** different subsets of donations.
+
+**6. Shred.** Once the epoch has swept and its last transaction is 600 blocks deep, its files are overwritten with random bytes, fsynced and unlinked, and seeds are zeroized. The epoch id is appended to the public shred log.
+> Real: the predicted window was 18:40 to 23:10 UTC on 27 Oct 2026. Receipt `50464c8e…` entered the [public shred log](https://amnesia.taila8827e.ts.net/audit) as **shredded in the 20:00 UTC hour**, inside the window. 66 epochs have shredded so far, 0 lost.
+
+**7. Seize again.** The same seizure of the whole desk, after the shred.
+> Real, 28 Oct 2026, 08:23 UTC: **Amnesia named 4 of 118** withdrawals, all from its 4 still-live epochs, and **`you-da1d` was not among them** (204 keys, 134.5 MB image). The **normal wallet**, seized the same minute, **still named `you-da1d`** at block 4,547,228, along with 34 others. The amount attack pinned **0 of 110** candidates across 22 sweeps; one sweep alone fit 561,642 different subsets.
+
+The demo tells each judge the same thing about their own donation on `/seize`, `/audit` and the home page, from the receipt their browser remembers.
+
+---
+
