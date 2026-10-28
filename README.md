@@ -249,3 +249,41 @@ bun run build
 
 ---
 
+## Architecture
+
+```mermaid
+flowchart TD
+    subgraph Public["Public surfaces"]
+        DONOR["Donor<br/>Tor Browser"]
+        JUDGE["Judge<br/>any browser"]
+    end
+
+    subgraph Host["Host (Mac under launchd)"]
+        TOR["tor 0.4.9.14<br/>onion with PoW"]
+        FUNNEL["Tailscale Funnel<br/>/, /v1, /demo"]
+        DESK["desk<br/>intake :8081 · read API :8082"]
+        RAM["RAM disk<br/>live epoch wallets"]
+        LEDGER["shred log<br/>epoch id, hours, bucket"]
+        LAB["lab :8090<br/>exchange, bots, seizure, UI"]
+    end
+
+    subgraph Net["Zcash Testnet"]
+        ARTI["arti circuits"]
+        LWD["lightwalletd<br/>testnet.zec.rocks"]
+    end
+
+    DONOR -->|"onion"| TOR --> DESK
+    JUDGE -->|"HTTPS"| FUNNEL
+    FUNNEL --> LAB
+    FUNNEL -->|"/v1 only"| DESK
+    DESK --> RAM
+    DESK --> LEDGER
+    DESK -->|"reads, broadcasts"| ARTI --> LWD
+    LAB -.->|"copies files, scans"| RAM
+    LAB -->|"pays like an exchange"| LWD
+```
+
+The donor intake is reachable only through the onion. The public Funnel URL serves the lab and the read API; `/donate` on it returns 404. The lab is a disclosed attacker that exists only for the demo: a real deployment has no lab.
+
+---
+
