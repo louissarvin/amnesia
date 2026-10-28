@@ -333,3 +333,10 @@ ZECATHON 2026, Shielded Payments track.
 
 ---
 
+## Disclaimers
+
+- **Testnet only.** TAZ has no value. Do not send mainnet ZEC to any address from this desk.
+- **The live window is exposed by design.** Until an epoch shreds, its keys exist and a seizure can read them. The demo shows this on purpose.
+- **Payments after the deadline are lost.** The keys that could receive them are destroyed. That is the price of a desk that cannot betray you.
+- **The demo host is a single Mac.** If it sleeps or loses power, the demo pauses, and live epochs on the RAM disk would be recorded as lost after a reboot.
+
