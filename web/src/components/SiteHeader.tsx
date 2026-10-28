@@ -9,7 +9,8 @@ export default function SiteHeader() {
   return (
     <header className="site-nav pointer-events-none fixed inset-x-0 top-3 z-40 flex justify-center px-3 sm:top-5">
       <div className="pointer-events-auto flex h-12 items-center gap-3 rounded-full border border-line-strong bg-glass py-1 pr-1.5 pl-4 backdrop-blur-xl sm:gap-6 sm:pl-5">
-        <Link to="/" className="text-[15px] font-semibold tracking-[-0.04em]">
+        <Link to="/" className="flex items-center gap-2 text-[15px] font-semibold tracking-[-0.04em]">
+          <img src="/assets/logo-nav.png" alt="" aria-hidden="true" width={17} height={22} className="h-[22px] w-auto" />
           amnesia
         </Link>
         <nav aria-label="Primary" className="flex items-center gap-3 font-mono text-[11px] tracking-[0.06em] uppercase sm:gap-5">
