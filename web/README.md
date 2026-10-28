@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/favicon.svg" alt="Amnesia" width="72" />
+<img src="public/assets/logo.png" alt="Amnesia" width="84" />
 
 # Amnesia web
 
