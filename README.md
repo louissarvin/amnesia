@@ -141,3 +141,17 @@ The demo tells each judge the same thing about their own donation on `/seize`, `
 
 ---
 
+## The stack
+
+| Layer | Technology |
+|---|---|
+| Desk | Rust 1.93.1, librustzcash (`zcash_client_backend` 0.25, `zcash_client_sqlite` 0.23, `orchard` 0.16), axum 0.8, tokio |
+| Network privacy | arti 0.43 for every chain read and broadcast (isolated circuits, no clearnet fallback); tor 0.4.9.14 built with PoW for the donor onion |
+| Chain access | lightwalletd at `testnet.zec.rocks`, over Tor only |
+| Memory hygiene | Zeroing global allocator, `MallocScribble` on the C heap, epochs on a `ram://` disk, core dumps off |
+| Lab | Rust: simulated exchange and bots, seizure and scanner, amount attack, judge API, static UI with a strict CSP and gzip |
+| Web | TanStack Start (React 19), TanStack Router and Query, Tailwind 4, GSAP, Motion, three.js |
+| Host | macOS launchd agents (desk, lab, tor, keep-awake, watchdog), Tailscale Funnel for the public judge surface |
+
+---
+
