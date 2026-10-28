@@ -305,3 +305,16 @@ The donor intake is reachable only through the onion. The public Funnel URL serv
 
 ---
 
+## Security
+
+- Threat model, mechanisms with file and line references, dated evidence and known residuals: [`SECURITY.md`](SECURITY.md).
+- 43 Rust tests (16 core, 4 desk, 23 lab) and 8 web tests. Release builds run with `overflow-checks = true`.
+- Leaks are what this project is judged on, so the limits are stated plainly:
+  - A compromise while an epoch is live exposes that epoch. One process holds all live epochs.
+  - Donors who pay from a transparent address or straight from an exchange leave their own records.
+  - A global passive adversary on Tor is out of scope.
+  - Amount and timing correlation is reduced, not removed.
+  - The Mac host keeps the ledger, Tor state and lab wallets on an SSD (none donor-linked), and macOS swap cannot be turned off.
+
+---
+
