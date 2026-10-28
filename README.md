@@ -155,3 +155,48 @@ The demo tells each judge the same thing about their own donation on `/seize`, `
 
 ---
 
+## Zcash integrations
+
+### Orchard and librustzcash
+Every address is its own Orchard-only account from 32 OS-random bytes. Transactions are built with librustzcash's proposal and builder APIs: at most 2 spends and 2 outputs, exactly 2 actions, the ZIP 317 fee of 10,000 zats, no OVK (the builder equivalent of `OvkPolicy::Discard`), expiry height plus 40. Wallet state is `zcash_client_sqlite`, one database per epoch, so shredding an epoch means destroying one directory.
+Key files: `crates/amnesia-desk/src/{wallet,epoch,desk,plan}.rs` · `crates/amnesia-core/src/{params,denom}.rs`
+
+### lightwalletd over Tor
+The desk never speaks to the chain in the clear. Compact block sync runs in 100 block chunks over an isolated arti circuit that is replaced every 30 minutes, and each broadcast uses a fresh circuit. Reorgs rewind 10 blocks below the fork and rescan. A failed Tor bootstrap is fatal.
+Key files: `crates/amnesia-desk/src/chain.rs` · `crates/amnesia-desk/src/main.rs`
+
+### Onion intake and ZIP 321
+The donor page is a Tor onion service with tor's PoW defense plus a SHA-256 proof of work in the page; without JavaScript it accepts after a 60 s wait. No cookies, strict CSP, `no-store`, no address in any URL. The plain-text answer includes a ZIP 321 `zcash:` URI and the shred receipt.
+Key files: `crates/amnesia-desk/src/intake.rs` · `infra/mac/torrc.mac`
+
+### Treasury sweeps
+Sweeps pay canonical notes of 1, 2 and 5 times a power of ten, with a random carry between 0.005 and 0.035 TAZ moving to the next epoch, so a treasury observer cannot read individual donations out of the sweep amounts.
+Key files: `crates/amnesia-core/src/denom.rs` · `crates/amnesia-desk/src/plan.rs`
+
+### Reusable pieces for other Zcash builders
+
+Amnesia is a product, but three of its parts work on their own:
+
+| Piece | What another builder gets | Where |
+|---|---|---|
+| **`seize`, a wallet seizure test** | Point it at any directory image plus a withdrawal log and it reports who can be named: it opens every `zcash_client_sqlite` database it finds (the storage behind librustzcash wallets), counts keyrings and seed files, and greps every byte for testnet unified addresses. A wallet team can run it after their own "delete" to see what really survives | `crates/amnesia-lab/src/bin/seize.rs`, `analyzer.rs` |
+| **Amount attack** | Given a treasury's swept notes and the unlinked withdrawals, counts how many donation subsets fit each sweep and which withdrawals are pinned. A direct way to measure amount correlation instead of arguing about it | `crates/amnesia-lab/src/amount.rs` |
+| **Forgetting epoch wallets** | The pattern of one `zcash_client_sqlite` database per epoch, `cap + 1` accounts from independent OS randomness, 2-action transactions, and shred by destroying the directory. Plus the pure planning crate behind it: denominations, carry, Poisson clocks, PoW, buckets | `crates/amnesia-desk/src/{wallet,epoch}.rs`, [`crates/amnesia-core`](crates/amnesia-core/README.md) |
+
+Try `seize` offline on a real bundle from the demo. Each bundle carries the seized `image/` and the exchange `records.csv` an attacker would hold:
+
+```bash
+curl -s https://amnesia.taila8827e.ts.net/demo/seizures        # pick an "id"; baseline bundles are about 4.5 MB, amnesia ones about 115 MB
+curl -sL -o bundle.tar https://amnesia.taila8827e.ts.net/demo/seizures/<id>/bundle.tar
+mkdir img && tar -xf bundle.tar -C img
+cargo run --release -p amnesia-lab --bin seize -- img/image img/records.csv
+```
+
+> Real, 27 Oct 2026, on baseline bundle `c7b51bff634620e9`: 3 files, 2 SQLite databases, 26 receipts recoverable, **26 of 79** exchange withdrawals linked to a donor. Point it at `image/`, not the whole folder: `records.csv` itself contains every recipient address.
+
+Bundles of the Amnesia desk hold live viewing keys, so the lab deletes each one as soon as the desk shreds the epochs it holds, and after 24 hours at the latest.
+
+**Further technical reading, per package:** [`SECURITY.md`](SECURITY.md) (adversaries, mechanisms with line references, evidence) · [`crates/amnesia-desk`](crates/amnesia-desk/README.md) (epoch phases, HTTP surface, config, profiles) · [`crates/amnesia-lab`](crates/amnesia-lab/README.md) (the seizure, demo API, CLI) · [`crates/amnesia-core`](crates/amnesia-core/README.md) (pure logic) · [`infra/README.md`](infra/README.md) (hardened Linux stack) · [`infra/mac/README.md`](infra/mac/README.md) (the current host) · [`web/README.md`](web/README.md) (judge UI).
+
+---
+
