@@ -39,7 +39,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: 'preload', href: geistLatin, as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
       { rel: 'preload', href: geistMonoLatin, as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' },
       { rel: 'stylesheet', href: appCss },
-      { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+      // The Amnesia mark, rendered once from public/assets/logo-index.svg into light PNGs.
+      { rel: 'icon', href: '/favicon-32.png', type: 'image/png', sizes: '32x32' },
+      { rel: 'icon', href: '/favicon-64.png', type: 'image/png', sizes: '64x64' },
+      { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
       { rel: 'manifest', href: '/manifest.json' },
     ],
   }),
